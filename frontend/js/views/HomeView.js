@@ -89,15 +89,16 @@ function EventCard(ev, auth, userId) {
   const date = dt.toLocaleDateString();
   const time = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  const posterUrl = ev.poster ? `${API_ORIGIN}${ev.poster}` : '';
+  // ✅ si es URL absoluta (Cloudinary), úsala tal cual; si no, prefija API_ORIGIN
+  const posterUrl = ev.poster
+    ? (ev.poster.startsWith('http') ? ev.poster : `${API_ORIGIN}${ev.poster}`)
+    : '';
 
-  // nº de asistentes y si el usuario actual está apuntado
   const attendeesCount = Array.isArray(ev.attendees) ? ev.attendees.length : 0;
   const isAttending = auth && userId && Array.isArray(ev.attendees)
-    ? ev.attendees.map(String).includes(String(userId))
+    ? ev.attendees.map(a => (a._id || a)).map(String).includes(String(userId))
     : false;
 
-  // Botones según estado de asistencia
   const attendBtns = auth ? `
     ${isAttending
       ? `<button class="btn small" data-action="unattend" data-id="${ev._id}">Cancelar asistencia</button>`
